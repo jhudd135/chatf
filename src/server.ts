@@ -1,6 +1,9 @@
 import http from "node:http";
 import fs from "node:fs/promises";
 
+import * as api from "./api.ts";
+import {Room} from "./room.ts";
+
 const port = process.env.PORT || 3000;
 
 const htmlCache: Map<string, Buffer> = new Map();
@@ -26,6 +29,8 @@ const server = http.createServer((req: http.IncomingMessage, res: http.ServerRes
             res.writeHead(404);
             res.end(JSON.stringify({error:"Resource not found"}));
         }
+    } else if (url.includes("api/")) {
+        api.requestHandler(url.substring(url.indexOf("api/") + 4), req, res);
     }
     else {
         res.setHeader("Content-Type", "text/html");
@@ -54,6 +59,8 @@ cacheDir("build/client", jsCache);
 startServer();
 
 function startServer() {
+    Room.create("test");
+
     server.listen(port, () => {
         console.log(`Server is running on port ${port}`);
     });
