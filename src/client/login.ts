@@ -12,7 +12,8 @@ window.onload = () => {
             body: JSON.stringify({
                 room: room,
                 user: (document.getElementById("userInput") as HTMLInputElement).value,
-            }),
+                token: (document.getElementById("tokenInput") as HTMLInputElement).value
+            })
         }).then(response => {
             if (response.ok) {
                 response.json().then(json => {

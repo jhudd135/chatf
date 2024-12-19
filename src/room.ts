@@ -14,12 +14,15 @@ export class Room {
         rooms.set(id, new Room(id));
     }
 
-    userJoin(name: string): User {
+    newUserJoin(name: string): User {
         if (this.users.has(name)) {
             return null;
         }
         const user = new User(name);
         this.users.set(name, user);
         return user;
+    }
+    userJoin(name: string, token: string): User {
+        return this.users.has(name) && this.users.get(name).token === token ? this.users.get(name) : null;
     }
 }
