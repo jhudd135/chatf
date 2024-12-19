@@ -8,13 +8,18 @@ export function requestHandler(command: string, req: http.IncomingMessage, res: 
         case "join":
             requestBody(req).then(body => {
                 const json: {room: string, user: string, token: string} = JSON.parse(body);
+                if (json.user.length < 4 || json.user.match(/[^\w]/)) {
+                    res.writeHead(400);
+                    res.end("username must be at least 4 characters long and only contain a-z, A-Z, 0-9, and _");
+                    return;
+                }
                 if (rooms.has(json.room)) {
                     const room: Room = rooms.get(json.room);
                     let user: User;
                     if (json.token) {
                         user = room.userJoin(json.user, json.token);
                         if (!user) {
-                            res.writeHead(409);
+                            res.writeHead(400);
                             res.end("username and token combination does not exist");
                             return;
                         }
