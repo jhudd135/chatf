@@ -13,13 +13,22 @@ export function init(io: (...args: any) => Socket) {
 
     const socket = io({auth: {token: user.token, room: roomId}});
 
-    document.getElementById("sendMessageButton").onclick = () => {
+    const sendMessage = () => {
         if (messageInput.value) {
             const message: Message = {content: messageInput.value, name: user.name, time: Date.now()};
             socket.emit("message", JSON.stringify(message));
             messageInput.value = "";
+            messageInput.focus();
         }
     };
+
+    document.getElementById("sendMessageButton").onclick = sendMessage;
+    
+    messageInput.addEventListener("keyup", ev => {
+        if (ev.key === "Enter") {
+            sendMessage();
+        }
+    });
 
     socket.on("message", msg => {
         const message = JSON.parse(msg) as Message;
