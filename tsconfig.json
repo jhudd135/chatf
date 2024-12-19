@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "esnext",
+        "outDir": "build/",
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "allowImportingTsExtensions": true,
+        "baseUrl": "./",
+        "noEmit": true
+    },
+    "include": [
+        "src"
+    ]
+}
