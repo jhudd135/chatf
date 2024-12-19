@@ -1,5 +1,6 @@
 import http from "node:http";
 import fs from "node:fs/promises";
+import {Server} from "socket.io";
 
 import * as api from "./api.ts";
 import {Room} from "./room.ts";
@@ -55,6 +56,8 @@ function cacheDir(directory: string, cache: Map<string, Buffer>) {
 
 cacheDir("html", htmlCache);
 cacheDir("build/client", jsCache);
+
+const io = new Server(server);
 
 startServer();
 

@@ -5,7 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feud</title>
-    <script type="module" src="./chat.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module">
+        import {init} from "./chat.js";
+        window.onload = () => {
+            init(io());
+        };
+    </script>
 </head>
 
 <body>
