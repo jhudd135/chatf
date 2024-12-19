@@ -4,9 +4,9 @@ export type Message = {content: string, name: string, time: number};
 
 export function init(io: (...args: any) => Socket) {
     const user: {name: string, token: string} = JSON.parse(localStorage.getItem("user"));
-    const roomId = localStorage.getItem("roomId");
+    const roomId = localStorage.getItem("room");
     document.getElementById("userInfoSpan").innerText = user.name + ":" + user.token;
-    document.getElementById("roomIdSpan").innerText = roomId;
+    document.getElementById("roomSpan").innerText = roomId;
 
     const messageInput = document.getElementById("messageInput") as HTMLButtonElement;
     const messageDiv = document.getElementById("messageDiv");
