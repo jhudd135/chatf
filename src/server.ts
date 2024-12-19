@@ -1,12 +1,61 @@
-import http from "http";
+import http from "node:http";
+import fs from "node:fs/promises";
 
-const port = 3000;
+const port = process.env.PORT || 3000;
+
+const htmlCache: Map<string, Buffer> = new Map();
+const jsCache: Map<string, Buffer> = new Map();
 
 const server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
-    res.writeHead(200);
-    res.end("hello world!\n");
+    const url = req.url.substring(1);
+    if (url.endsWith(".html")) {
+        if (htmlCache.has(url)) {
+            res.setHeader("Content-Type", "text/html");
+            res.writeHead(200);
+            res.end(htmlCache.get(url));
+        } else {
+            res.writeHead(404);
+            res.end(JSON.stringify({error:"Resource not found"}));
+        }
+    } else if (url.endsWith('.js')) {
+        if (jsCache.has(url)) {
+            res.setHeader("Content-Type", "text/javascript");
+            res.writeHead(200);
+            res.end(jsCache.get(url));
+        } else {
+            res.writeHead(404);
+            res.end(JSON.stringify({error:"Resource not found"}));
+        }
+    }
+    else {
+        res.setHeader("Content-Type", "text/html");
+        res.writeHead(200);
+        res.end(htmlCache.get("login.html"));
+    }
 });
 
-server.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-});
+function cacheDir(directory: string, cache: Map<string, Buffer>) {
+    fs.readdir(directory).then(files => {
+        files.forEach(name => {
+            const path = "./" + directory + "/" + name;
+            fs.readFile(path).then(contents => {
+                cache.set(name, contents);
+            }).catch(err => {
+                console.error(`Could not read ${path} file: ${err}`);
+                process.exit(1);
+            });
+        });
+    });
+}
+
+cacheDir("html", htmlCache);
+cacheDir("build/client", jsCache);
+
+startServer();
+
+function startServer() {
+    server.listen(port, () => {
+        console.log(`Server is running on port ${port}`);
+    });
+}
+
