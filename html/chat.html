@@ -9,7 +9,7 @@
     <script type="module">
         import {init} from "./chat.js";
         window.onload = () => {
-            init(io());
+            init(io);
         };
     </script>
 </head>
@@ -20,7 +20,8 @@
         User: <span id="userInfoSpan"></span>
         Room: <span id="roomIdSpan"></span>
     </div>
-    <div style="height: 60vh; overflow-y: auto;" id="messages"></div>
+    <div style="height: 60vh; overflow-y: auto;" id="messageDiv"></div>
+    <input id="messageInput"> <button id="sendMessageButton">Send Message</button>
 </body>
 
 </html>

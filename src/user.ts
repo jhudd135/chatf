@@ -13,4 +13,7 @@ export class User {
         } while (tokens.has(this.token));
         tokens.add(this.token);
     }
+    toString(): string {
+        return this.name + ":" + this.token;
+    }
 }

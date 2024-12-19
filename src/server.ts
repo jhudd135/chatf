@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import {Server} from "socket.io";
 
 import * as api from "./api.ts";
-import {Room} from "./room.ts";
+import {Room, rooms} from "./room.ts";
 
 const port = process.env.PORT || 3000;
 
@@ -59,10 +59,19 @@ cacheDir("build/client", jsCache);
 
 const io = new Server(server);
 
+io.on("connection", socket => {
+    const auth = socket.handshake.auth as {room: string, token: string};
+    if (rooms.has(auth.room)) {
+        rooms.get(auth.room).userConnect(socket, auth.token);
+    } else {
+        socket.disconnect(true);
+    }
+});
+
 startServer();
 
 function startServer() {
-    Room.create("test");
+    Room.create("test", io);
 
     server.listen(port, () => {
         console.log(`Server is running on port ${port}`);
