@@ -1,6 +1,7 @@
 import { Server, Socket } from "socket.io";
 import { User } from "./user.ts";
 import { Message } from "./client/chat.ts";
+import { UserConfig } from "./client/login.ts";
 
 export const rooms: Map<string, Room> = new Map();
 
@@ -24,17 +25,17 @@ export class Room {
         rooms.set(id, new Room(id, io));
     }
 
-    signup(name: string): User {
+    signup(name: string): UserConfig {
         if (this.users.has(name)) {
             return null;
         }
         const user = new User(name);
         this.users.set(name, user);
         this.tokens.set(user.token, user.name);
-        return user;
+        return {room: this.id, name: user.name, token: user.token};
     }
-    login(name: string, token: string): User {
-        return this.users.has(name) && this.users.get(name).token === token ? this.users.get(name) : null;
+    login(name: string, token: string): UserConfig {
+        return this.users.has(name) && this.users.get(name).token === token ? {room: this.id, name: name, token: token} : null;
     }
     remove(name: string, token: string): boolean {
         if (this.tokens.has(token) && this.tokens.get(token) === name) {

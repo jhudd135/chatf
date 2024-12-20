@@ -1,24 +1,24 @@
 import { refDir } from "./hrefs.ts";
 import { Socket } from "socket.io";
+import { UserConfig } from "./login.ts";
 
 export type Message = {content: string, name: string, time: number};
 
 export function init(io: (...args: any) => Socket) {
-    const user: {name: string, token: string} = JSON.parse(localStorage.getItem("user"));
-    const roomId = localStorage.getItem("room");
-    document.getElementById("userInfoSpan").innerText = user.name + ":" + user.token;
-    document.getElementById("roomHeader").innerText = roomId;
+    const config: UserConfig = JSON.parse(localStorage.getItem("userConfig"));
+    document.getElementById("userInfoSpan").innerText = config.name + ":" + config.token;
+    document.getElementById("roomHeader").innerText = config.room;
 
     const messageInput = document.getElementById("messageInput") as HTMLButtonElement;
     const messageDiv = document.getElementById("messageDiv");
     const removeErrorSpan = document.getElementById("removeErrorSpan");
 
-    const socket = io({auth: {token: user.token, room: roomId}});
+    const socket = io({auth: {token: config.token, room: config.room}});
 
     const sendMessage = () => {
         const content = messageInput.value.trim();
         if (content) {
-            const message: Message = {content: content, name: user.name, time: Date.now()};
+            const message: Message = {content: content, name: config.name, time: Date.now()};
             socket.emit("message", message);
             messageInput.value = "";
             messageInput.focus();
@@ -66,15 +66,10 @@ export function init(io: (...args: any) => Socket) {
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-                room: roomId,
-                name: user.name,
-                token: user.token
-            })
+            body: JSON.stringify(config)
         }).then(response => {
             if (response.ok) {
-                localStorage.removeItem("user");
-                localStorage.removeItem("room");
+                localStorage.removeItem("userConfig");
                 signout();
             } else {
                 response.text().then(err => {

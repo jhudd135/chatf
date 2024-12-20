@@ -1,16 +1,18 @@
 import { refDir } from "./hrefs.ts";
 
+export type UserConfig = {room: string, name: string, token: string};
+
 window.onload = () => {
     const roomInput = document.getElementById("roomInput") as HTMLInputElement;
     const userInput = document.getElementById("userInput") as HTMLInputElement;
     const tokenInput = document.getElementById("tokenInput") as HTMLInputElement;
     const messageSpan = document.getElementById("messageSpan");
 
-    roomInput.value = localStorage.getItem("room");
-    const storedUser: {name: string, token: string} = JSON.parse(localStorage.getItem("user"));
-    if (storedUser) {
-        userInput.value = storedUser.name;
-        tokenInput.value = storedUser.token;
+    const storedConfig: UserConfig = JSON.parse(localStorage.getItem("userConfig"));
+    if (storedConfig) {
+        roomInput.value = storedConfig.room;
+        userInput.value = storedConfig.name;
+        tokenInput.value = storedConfig.token;
     }
 
     document.getElementById("joinButton").onclick = () => {
@@ -29,8 +31,7 @@ window.onload = () => {
         }).then(response => {
             if (response.ok) {
                 response.json().then(json => {
-                    localStorage.setItem("user", JSON.stringify(json));
-                    localStorage.setItem("room", room);
+                    localStorage.setItem("userConfig", JSON.stringify(json));
                     window.location.assign(refDir(window.location.href) + "chat.html");
                 })
             } else {
