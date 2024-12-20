@@ -1,7 +1,7 @@
 import { randomString } from "./utils.ts";
 
 const tokenChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-export const tokens: Set<string> = new Set();
+const tokens: Set<string> = new Set();
 
 export class User {
     name: string;
@@ -15,5 +15,8 @@ export class User {
     }
     toString(): string {
         return this.name + ":" + this.token;
+    }
+    remove() {
+        tokens.delete(this.token);
     }
 }

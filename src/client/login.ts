@@ -23,7 +23,7 @@ window.onload = () => {
             },
             body: JSON.stringify({
                 room: room,
-                user: userInput.value,
+                name: userInput.value,
                 token: tokenInput.value
             })
         }).then(response => {

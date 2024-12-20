@@ -7,8 +7,8 @@ export function requestHandler(command: string, req: http.IncomingMessage, res: 
     switch (command) {
         case "join":
             requestBody(req).then(bodyString => {
-                const body: { room: string, user: string, token: string } = JSON.parse(bodyString);
-                if (body.user.length < 4 || body.user.match(/[^\w]/)) {
+                const body: { room: string, name: string, token: string } = JSON.parse(bodyString);
+                if (body.name.length < 4 || body.name.match(/[^\w]/)) {
                     res.writeHead(400);
                     res.end("username must be at least 4 characters long and only contain a-z, A-Z, 0-9, and _");
                     return;
@@ -17,7 +17,7 @@ export function requestHandler(command: string, req: http.IncomingMessage, res: 
                     const room: Room = rooms.get(body.room);
                     let user: User;
                     if (body.token) {
-                        user = room.userJoin(body.user, body.token);
+                        user = room.login(body.name, body.token);
                         if (!user) {
                             res.writeHead(400);
                             res.end("username and token combination does not exist");
@@ -27,7 +27,7 @@ export function requestHandler(command: string, req: http.IncomingMessage, res: 
                             res.end(JSON.stringify(user));
                         }
                     } else {
-                        user = room.newUserJoin(body.user);
+                        user = room.signup(body.name);
                         if (!user) {
                             res.writeHead(409);
                             res.end("username already taken");
@@ -44,6 +44,20 @@ export function requestHandler(command: string, req: http.IncomingMessage, res: 
             });
             break;
         case "leave":
-            requestBody(req).then()
+            requestBody(req).then(bodyString => {
+                const body: {room: string, name: string, token: string} = JSON.parse(bodyString);
+                if (rooms.has(body.room)) {
+                    if (rooms.get(body.room).remove(body.name, body.token)) {
+                        res.writeHead(201);
+                        res.end("successfully removed");
+                    } else {
+                        res.writeHead(400);
+                        res.end("username and token combination does not exist");
+                    }
+                } else {
+                    res.writeHead(404);
+                    res.end("room not found");
+                }
+            });
     }
 }

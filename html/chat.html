@@ -15,10 +15,13 @@
 </head>
 
 <body>
-    <h1>Room</h1>
-    <div>
-        User: <span id="userInfoSpan"></span>
-        Room: <span id="roomSpan"></span>
+    <h1 id="roomHeader">Room</h1>
+    
+    <div style="display: flex; flex-direction: row;">
+        <div>User: <span id="userInfoSpan"></span></div>
+        <button id="signoutButton" style="margin-left: 10px;">Signout</button>
+        <span id="removeErrorSpan" style="margin-left: auto; color: red;"></span>
+        <button id="removeButton" style="color: red;">Delete User</button>
     </div>
     <div style="height: 60vh; overflow-y: auto;" id="messageDiv"></div>
     <input id="messageInput"> <button id="sendMessageButton">Send Message</button>

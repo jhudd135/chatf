@@ -21,7 +21,7 @@ export class Room {
         rooms.set(id, new Room(id, io));
     }
 
-    newUserJoin(name: string): User {
+    signup(name: string): User {
         if (this.users.has(name)) {
             return null;
         }
@@ -30,8 +30,17 @@ export class Room {
         this.tokens.set(user.token, user.name);
         return user;
     }
-    userJoin(name: string, token: string): User {
+    login(name: string, token: string): User {
         return this.users.has(name) && this.users.get(name).token === token ? this.users.get(name) : null;
+    }
+    remove(name: string, token: string): boolean {
+        if (this.tokens.has(token) && this.tokens.get(token) === name) {
+            this.users.get(name).remove();
+            this.users.delete(name);
+            this.tokens.delete(token);
+            return true;
+        }
+        return false;
     }
     userConnect(socket: Socket, token: string) {
         if (this.tokens.has(token)) {
