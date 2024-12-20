@@ -25,6 +25,9 @@ export class Room {
         rooms.set(id, new Room(id, io));
     }
 
+    private exists(name: string, token: string) {
+        return this.tokens.has(token) && this.tokens.get(token) === name;
+    }
     signup(name: string): UserConfig {
         if (this.users.has(name)) {
             return null;
@@ -35,37 +38,40 @@ export class Room {
         return { room: this.id, name: user.name, token: user.token };
     }
     login(name: string, token: string): UserConfig {
-        return this.users.has(name) && this.users.get(name).token === token ? { room: this.id, name: name, token: token } : null;
+        return this.exists(name, token) ? { room: this.id, name: name, token: token } : null;
     }
     remove(name: string, token: string): boolean {
-        if (this.tokens.has(token) && this.tokens.get(token) === name) {
-            this.users.get(name).remove();
-            this.users.delete(name);
-            this.tokens.delete(token);
-            return true;
+        if (!this.exists(name, token)) {
+            return false;
         }
-        return false;
+        this.users.get(name).remove();
+        this.users.delete(name);
+        this.tokens.delete(token);
+        return true;
     }
     userConnect(socket: Socket, auth: UserConfig) {
-        if (this.tokens.has(auth.token) && this.tokens.get(auth.token) === auth.name) {
-            // this.connections.set(token, socket);
-            console.log("connected user", this.users.get(auth.name).toString(), "room", this.id);
-            socket.join(this.id);
-            socket.on("refresh", callback => {
-                callback(this.messages);
-            });
-            socket.on("message", (msg: { token: string, message: Message }) => {
-                const message = msg.message as Message;
-                if (this.tokens.get(msg.token) === message.name) {
-                    message.content = message.content.trim();
-                    if (message.content) {
-                        this.messages.push(message);
-                        this.io.to(this.id).emit("message", message);
-                    }
-                }
-            });
-        } else {
+        if (!this.exists(auth.name, auth.token)) {
             socket.disconnect(true);
+            return;
         }
+        // this.connections.set(token, socket);
+        console.log("connected user", this.users.get(auth.name).toString(), "room", this.id);
+        socket.join(this.id);
+        socket.on("refresh", callback => {
+            callback(this.messages);
+        });
+        socket.on("message", (msg: { token: string, message: Message }) => {
+            const message = msg.message as Message;
+            if (!this.exists(message.name, msg.token)) {
+                return;
+            }
+            message.content = message.content.trim();
+            if (!message.content) {
+                return;
+            }
+            this.messages.push(message);
+            this.io.to(this.id).emit("message", message);
+            
+        });
     }
 }

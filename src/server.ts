@@ -62,11 +62,11 @@ const io = new Server(server);
 
 io.on("connection", socket => {
     const auth = socket.handshake.auth as UserConfig;
-    if (rooms.has(auth.room)) {
-        rooms.get(auth.room).userConnect(socket, auth);
-    } else {
+    if (!rooms.has(auth.room)) {
         socket.disconnect(true);
+        return;
     }
+    rooms.get(auth.room).userConnect(socket, auth);
 });
 
 startServer();
