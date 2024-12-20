@@ -55,7 +55,7 @@ export class Room {
             });
             this.io.to(socket.id).emit("")
             socket.on("message", msg => {
-                this.messages.push(JSON.parse(msg));
+                this.messages.push(msg as Message);
                 this.io.to(this.id).emit("message", msg);
             });
         } else {

@@ -18,7 +18,7 @@ export function init(io: (...args: any) => Socket) {
     const sendMessage = () => {
         if (messageInput.value) {
             const message: Message = {content: messageInput.value, name: user.name, time: Date.now()};
-            socket.emit("message", JSON.stringify(message));
+            socket.emit("message", message);
             messageInput.value = "";
             messageInput.focus();
         }
@@ -39,7 +39,7 @@ export function init(io: (...args: any) => Socket) {
     }
 
     socket.on("message", msg => {
-        messageDiv.appendChild(buildMessage(JSON.parse(msg) as Message));
+        messageDiv.appendChild(buildMessage(msg as Message));
         messageDiv.scrollTop = messageDiv.scrollHeight;
     });
 
