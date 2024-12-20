@@ -32,11 +32,14 @@ export function init(io: (...args: any) => Socket) {
         }
     });
 
-    socket.on("message", msg => {
-        const message = JSON.parse(msg) as Message;
+    const buildMessage = (message: Message): HTMLDivElement => {
         const div = document.createElement("p");
         div.innerText = message.name + " @ " + new Date(message.time).toLocaleString("en-US") + " : " + message.content;
-        messageDiv.appendChild(div);
+        return div;
+    }
+
+    socket.on("message", msg => {
+        messageDiv.appendChild(buildMessage(JSON.parse(msg) as Message));
         messageDiv.scrollTop = messageDiv.scrollHeight;
     });
 
@@ -68,4 +71,16 @@ export function init(io: (...args: any) => Socket) {
             }
         });
     };
+
+    const refresh = () => {
+        socket.timeout(5000).emitWithAck("refresh").then((response: Message[]) => {
+            messageDiv.innerText = "";
+            response.forEach(message => {
+                messageDiv.appendChild(buildMessage(message));
+            });
+            messageDiv.scrollTop = messageDiv.scrollHeight;
+        });
+    }
+
+    refresh();
 }

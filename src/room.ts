@@ -1,5 +1,6 @@
 import { Server, Socket } from "socket.io";
 import { User } from "./user.ts";
+import { Message } from "./client/chat.ts";
 
 export const rooms: Map<string, Room> = new Map();
 
@@ -8,6 +9,7 @@ export class Room {
     io: Server;
     users: Map<string, User>; // username : user
     tokens: Map<string, string>; // token : username
+    messages: Message[];
     // connections: Map<string, Socket>; // token : socket
 
     constructor(id: string, io: Server) {
@@ -15,6 +17,7 @@ export class Room {
         this.io = io;
         this.users = new Map();
         this.tokens = new Map();
+        this.messages = [];
         // this.connections = new Map();
     }
     static create(id: string, io: Server) {
@@ -47,7 +50,12 @@ export class Room {
             // this.connections.set(token, socket);
             console.log("connected user", this.users.get(this.tokens.get(token)).toString(), "room", this.id);
             socket.join(this.id);
+            socket.on("refresh", callback => {
+                callback(this.messages);
+            });
+            this.io.to(socket.id).emit("")
             socket.on("message", msg => {
+                this.messages.push(JSON.parse(msg));
                 this.io.to(this.id).emit("message", msg);
             });
         } else {
