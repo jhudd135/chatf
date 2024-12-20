@@ -55,8 +55,12 @@ export class Room {
             });
             this.io.to(socket.id).emit("")
             socket.on("message", msg => {
-                this.messages.push(msg as Message);
-                this.io.to(this.id).emit("message", msg);
+                const message = msg as Message;
+                message.content = message.content.trim();
+                if (message.content) {
+                    this.messages.push(message);
+                    this.io.to(this.id).emit("message", message);
+                }
             });
         } else {
             socket.disconnect(true);

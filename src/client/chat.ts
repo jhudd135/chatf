@@ -16,8 +16,9 @@ export function init(io: (...args: any) => Socket) {
     const socket = io({auth: {token: user.token, room: roomId}});
 
     const sendMessage = () => {
-        if (messageInput.value) {
-            const message: Message = {content: messageInput.value, name: user.name, time: Date.now()};
+        const content = messageInput.value.trim();
+        if (content) {
+            const message: Message = {content: content, name: user.name, time: Date.now()};
             socket.emit("message", message);
             messageInput.value = "";
             messageInput.focus();
@@ -26,15 +27,26 @@ export function init(io: (...args: any) => Socket) {
 
     document.getElementById("sendMessageButton").onclick = sendMessage;
     
-    messageInput.addEventListener("keyup", ev => {
-        if (ev.key === "Enter") {
+    messageInput.addEventListener("keydown", ev => {
+        if (ev.key === "Enter" && !ev.getModifierState("Shift")) {
             sendMessage();
+            ev.preventDefault();
         }
     });
 
     const buildMessage = (message: Message): HTMLDivElement => {
-        const div = document.createElement("p");
-        div.innerText = message.name + " @ " + new Date(message.time).toLocaleString("en-US") + " : " + message.content;
+        const div = document.createElement("div");
+        div.classList.add("msg");
+        const name = document.createElement("span");
+        name.innerText = message.name;
+        div.appendChild(name);
+        const time = document.createElement("span");
+        time.innerText = new Date(message.time).toLocaleString("en-US");
+        time.classList.add("msgTime");
+        div.appendChild(time);
+        const content = document.createElement("p");
+        content.innerText = message.content;
+        div.appendChild(content);
         return div;
     }
 

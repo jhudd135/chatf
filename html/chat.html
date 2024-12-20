@@ -12,6 +12,23 @@
             init(io);
         };
     </script>
+    <style>
+        .msg {
+            display: flex;
+            flex-direction: row;
+        }
+        .msg span {
+            min-width: max-content;
+            margin-right: 15px;
+        }
+        .msg .msgTime {
+            color: grey;
+        }
+        .msg p {
+            margin: 0;
+            word-break: break-word;
+        }
+    </style>
 </head>
 
 <body>
@@ -25,7 +42,7 @@
     </div>
     <div style="height: 60vh; overflow-y: auto;" id="messageDiv"></div>
     <div style="display: flex; flex-direction: row;">
-        <textarea id="messageInput" style="height: 15vh; width: 60vw; resize: none;"></textarea> 
+        <textarea id="messageInput" style="height: 15vh; width: 60vw; resize: none;" placeholder="enter a message"></textarea> 
         <button id="sendMessageButton" style="margin-bottom: auto;">Send Message</button>
     </div>
 </body>
