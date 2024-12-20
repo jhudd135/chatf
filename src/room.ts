@@ -46,15 +46,14 @@ export class Room {
         }
         return false;
     }
-    userConnect(socket: Socket, token: string) {
-        if (this.tokens.has(token)) {
+    userConnect(socket: Socket, auth: UserConfig) {
+        if (this.tokens.has(auth.token) && this.tokens.get(auth.token) === auth.name) {
             // this.connections.set(token, socket);
-            console.log("connected user", this.users.get(this.tokens.get(token)).toString(), "room", this.id);
+            console.log("connected user", this.users.get(auth.name).toString(), "room", this.id);
             socket.join(this.id);
             socket.on("refresh", callback => {
                 callback(this.messages);
             });
-            this.io.to(socket.id).emit("")
             socket.on("message", msg => {
                 const message = msg as Message;
                 message.content = message.content.trim();

@@ -4,6 +4,7 @@ import {Server} from "socket.io";
 
 import * as api from "./api.ts";
 import {Room, rooms} from "./room.ts";
+import { UserConfig } from "./client/login.ts";
 
 const port = process.env.PORT || 3000;
 
@@ -60,9 +61,9 @@ cacheDir("build/client", jsCache);
 const io = new Server(server);
 
 io.on("connection", socket => {
-    const auth = socket.handshake.auth as {room: string, token: string};
+    const auth = socket.handshake.auth as UserConfig;
     if (rooms.has(auth.room)) {
-        rooms.get(auth.room).userConnect(socket, auth.token);
+        rooms.get(auth.room).userConnect(socket, auth);
     } else {
         socket.disconnect(true);
     }

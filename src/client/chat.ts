@@ -13,7 +13,7 @@ export function init(io: (...args: any) => Socket) {
     const messageDiv = document.getElementById("messageDiv");
     const removeErrorSpan = document.getElementById("removeErrorSpan");
 
-    const socket = io({auth: {token: config.token, room: config.room}});
+    const socket = io({auth: config});
 
     const sendMessage = () => {
         const content = messageInput.value.trim();
