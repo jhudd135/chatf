@@ -18,7 +18,7 @@ export function init(io: (...args: any) => Socket) {
     const sendMessage = () => {
         const content = messageInput.value.trim();
         if (content) {
-            const message: Message = {content: content, name: config.name, time: Date.now()};
+            const message: {token: string, message: Message} = {token: config.token, message: {content: content, name: config.name, time: Date.now()}};
             socket.emit("message", message);
             messageInput.value = "";
             messageInput.focus();
