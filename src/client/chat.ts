@@ -58,6 +58,8 @@ export function init(io: (...args: any) => Socket) {
             })
         }).then(response => {
             if (response.ok) {
+                localStorage.removeItem("user");
+                localStorage.removeItem("room");
                 signout();
             } else {
                 response.text().then(err => {
