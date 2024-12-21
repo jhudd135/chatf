@@ -14,43 +14,30 @@ const resourceCache: Map<string, Buffer> = new Map();
 
 const server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
     const url = req.url.substring(1);
-    if (url.endsWith(".html")) {
-        if (htmlCache.has(url)) {
-            res.setHeader("Content-Type", "text/html");
-            res.writeHead(200);
-            res.end(htmlCache.get(url));
-        } else {
-            res.writeHead(404);
-            res.end(JSON.stringify({error:"Resource not found"}));
-        }
-    } else if (url.endsWith('.js')) {
-        if (jsCache.has(url)) {
-            res.setHeader("Content-Type", "text/javascript");
-            res.writeHead(200);
-            res.end(jsCache.get(url));
-        } else {
-            res.writeHead(404);
-            res.end(JSON.stringify({error:"Resource not found"}));
-        }
+    let file: string;
+    if (url.endsWith(".html") && htmlCache.has(url)) {
+        res.setHeader("Content-Type", "text/html");
+        res.writeHead(200);
+        res.end(htmlCache.get(url));
+    } else if (url.endsWith('.js') && jsCache.has(url)) {
+        res.setHeader("Content-Type", "text/javascript");
+        res.writeHead(200);
+        res.end(jsCache.get(url));
     } else if (url.startsWith("api/")) {
         api.requestHandler(url.substring(url.indexOf("api/") + 4), req, res);
-    } else if (url.startsWith("resources/")) {
-        const file = url.substring(url.indexOf("resources/") + 10);
-        if (resourceCache.has(file)) {
-            const extension = file.substring(file.lastIndexOf(".") + 1);
-            const contentType = {mp3: "audio/mpeg"}[extension];
-            res.setHeader("Content-Type", contentType);
-            res.writeHead(200);
-            res.end(resourceCache.get(file));
-        } else {
-            res.writeHead(404);
-            res.end(JSON.stringify({error:"Resource not found"}));
-        }
-    }
-    else {
+    } else if (url.startsWith("resources/") && resourceCache.has(file = url.substring(url.indexOf("resources/") + 10))) {
+        const extension = file.substring(file.lastIndexOf(".") + 1);
+        const contentType = {mp3: "audio/mpeg"}[extension];
+        res.setHeader("Content-Type", contentType);
+        res.writeHead(200);
+        res.end(resourceCache.get(file));
+    } else if (!url) {
         res.setHeader("Content-Type", "text/html");
         res.writeHead(200);
         res.end(htmlCache.get("login.html"));
+    } else {
+        res.writeHead(404);
+        res.end(JSON.stringify({error:"Resource not found"}));
     }
 });
 
