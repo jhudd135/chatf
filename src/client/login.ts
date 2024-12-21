@@ -10,15 +10,27 @@ window.onload = () => {
 
     const storedConfig: UserConfig = JSON.parse(localStorage.getItem("userConfig"));
     if (storedConfig) {
-        roomInput.value = storedConfig.room;
-        userInput.value = storedConfig.name;
-        // tokenInput.value = storedConfig.token;
+        fetch(refDir(window.location.href) + "api/join/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(storedConfig)
+        }).then(response => {
+            if (response.ok) {
+                window.location.assign(refDir(window.location.href) + "chat.html");
+            } else {
+                response.text().then(err => {
+                    messageSpan.innerText = err;
+                });
+            }
+        });
     }
 
     document.getElementById("joinButton").onclick = () => {
         const room = roomInput.value;
         
-        fetch(refDir(window.location.href) + "api/join", {
+        fetch(refDir(window.location.href) + "api/join/signup", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

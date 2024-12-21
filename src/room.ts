@@ -25,7 +25,7 @@ export class Room {
         rooms.set(id, new Room(id, io));
     }
 
-    private exists(name: string, token: string) {
+    exists(name: string, token: string) {
         return this.tokens.has(token) && this.tokens.get(token) === name;
     }
     signup(name: string): UserConfig {
@@ -36,9 +36,6 @@ export class Room {
         this.users.set(name, user);
         this.tokens.set(user.token, user.name);
         return { room: this.id, name: user.name, token: user.token };
-    }
-    login(name: string, token: string): UserConfig {
-        return this.exists(name, token) ? { room: this.id, name: name, token: token } : null;
     }
     remove(name: string, token: string): boolean {
         if (!this.exists(name, token)) {
