@@ -9,7 +9,7 @@ let socket: Socket;
 
 let messageInput: HTMLTextAreaElement;
 let messageDiv: HTMLDivElement;
-let removeErrorSpan: HTMLSpanElement;
+let errorSpan: HTMLSpanElement;
 let connectedUsersDiv: HTMLDivElement;
 let connectedUserCountSpan: HTMLSpanElement;
 
@@ -20,7 +20,7 @@ export function init(io: (...args: any) => Socket) {
 
     messageInput = document.getElementById("messageInput") as HTMLTextAreaElement;
     messageDiv = document.getElementById("messageDiv") as HTMLDivElement;
-    removeErrorSpan = document.getElementById("removeErrorSpan");
+    errorSpan = document.getElementById("errorSpan");
     connectedUsersDiv = document.getElementById("connectedUsersDiv") as HTMLDivElement;
     connectedUserCountSpan = document.getElementById("connectedUserCountSpan");
 
@@ -52,8 +52,7 @@ export function init(io: (...args: any) => Socket) {
         connectedUserCountSpan.innerText = "" + connectedUsersDiv.childNodes.length;
     });
 
-    document.getElementById("signoutButton").onclick = signout;
-    document.getElementById("removeButton").onclick = removeUser;
+    document.getElementById("leaveButton").onclick = leave;
 
     refresh();
 }
@@ -65,10 +64,6 @@ function sendMessage() {
     socket.emit("message", message);
     messageInput.value = "";
     messageInput.focus();
-};
-
-function signout() {
-    window.location.assign(refDir(window.location.href) + "login.html");
 };
 
 function buildMessage(message: Message): HTMLDivElement {
@@ -87,7 +82,7 @@ function buildMessage(message: Message): HTMLDivElement {
     return div;
 }
 
-function removeUser() {
+function leave() {
     fetch(refDir(window.location.href) + "api/leave", {
         method: "POST",
         headers: {
@@ -97,10 +92,10 @@ function removeUser() {
     }).then(response => {
         if (response.ok) {
             localStorage.removeItem("userConfig");
-            signout();
+            window.location.assign(refDir(window.location.href) + "login.html");
         } else {
             response.text().then(err => {
-                removeErrorSpan.innerText = err;
+                errorSpan.innerText = err;
             });
         }
     });
