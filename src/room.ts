@@ -44,9 +44,10 @@ export class Room {
         if (!this.exists(name, token)) {
             return false;
         }
+        this.notifyConnection(token, false);
         this.users.get(name).remove();
         this.users.delete(name);
-        // this.tokens.delete(token);
+        this.tokens.delete(token);
         return true;
     }
     userConnect(socket: Socket, auth: UserConfig) {
@@ -87,6 +88,7 @@ export class Room {
     }
 
     notifyConnection(token: string, connected: boolean) {
+        if (!this.tokens.has(token)) {return;}
         console.log(
             this.id, ":", 
             this.tokens.get(token) + ":" + token, 

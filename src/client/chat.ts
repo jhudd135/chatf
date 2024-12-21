@@ -14,20 +14,25 @@ let connectedUsersDiv: HTMLDivElement;
 let connectedUserCountSpan: HTMLSpanElement;
 
 export function init(io: (...args: any) => Socket) {
-    config = JSON.parse(localStorage.getItem("userConfig"));
-    if (!config) {goToLogin();}
-    document.getElementById("userInfoSpan").innerText = config.name + ":" + config.token;
-    document.getElementById("roomHeader").innerText = config.room;
-
     messageInput = document.getElementById("messageInput") as HTMLTextAreaElement;
     messageDiv = document.getElementById("messageDiv") as HTMLDivElement;
     errorSpan = document.getElementById("errorSpan");
     connectedUsersDiv = document.getElementById("connectedUsersDiv") as HTMLDivElement;
     connectedUserCountSpan = document.getElementById("connectedUserCountSpan");
+
+    config = JSON.parse(localStorage.getItem("userConfig"));
+    if (!config) {
+        errorSpan.innerText = "missing user config";
+        goToLogin();
+    }
+    document.getElementById("userInfoSpan").innerText = config.name + ":" + config.token;
+    document.getElementById("roomHeader").innerText = config.room;
+
     
     socket = io({auth: config});    
     
     socket.on("disconnect", () => {
+        errorSpan.innerText = "connection failed";
         goToLogin();
     });
 
