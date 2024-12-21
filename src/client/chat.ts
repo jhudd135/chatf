@@ -4,25 +4,27 @@ import { UserConfig } from "./login.ts";
 
 export type Message = {content: string, name: string, time: number};
 
+let config: UserConfig;
+let socket: Socket;
+
+let messageInput: HTMLTextAreaElement;
+let messageDiv: HTMLDivElement;
+let removeErrorSpan: HTMLSpanElement;
+let connectedUsersDiv: HTMLDivElement;
+let connectedUserCountSpan: HTMLSpanElement;
+
 export function init(io: (...args: any) => Socket) {
-    const config: UserConfig = JSON.parse(localStorage.getItem("userConfig"));
+    config = JSON.parse(localStorage.getItem("userConfig"));
     document.getElementById("userInfoSpan").innerText = config.name + ":" + config.token;
     document.getElementById("roomHeader").innerText = config.room;
 
-    const messageInput = document.getElementById("messageInput") as HTMLButtonElement;
-    const messageDiv = document.getElementById("messageDiv");
-    const removeErrorSpan = document.getElementById("removeErrorSpan");
+    messageInput = document.getElementById("messageInput") as HTMLTextAreaElement;
+    messageDiv = document.getElementById("messageDiv") as HTMLDivElement;
+    removeErrorSpan = document.getElementById("removeErrorSpan");
+    connectedUsersDiv = document.getElementById("connectedUsersDiv") as HTMLDivElement;
+    connectedUserCountSpan = document.getElementById("connectedUserCountSpan");
 
-    const socket = io({auth: config});
-
-    const sendMessage = () => {
-        const content = messageInput.value.trim();
-        if (!content) { return; }
-        const message: {token: string, message: Message} = {token: config.token, message: {content: content, name: config.name, time: Date.now()}};
-        socket.emit("message", message);
-        messageInput.value = "";
-        messageInput.focus();
-    };
+    socket = io({auth: config});
 
     document.getElementById("sendMessageButton").onclick = sendMessage;
     
@@ -33,60 +35,100 @@ export function init(io: (...args: any) => Socket) {
         }
     });
 
-    const buildMessage = (message: Message): HTMLDivElement => {
-        const div = document.createElement("div");
-        div.classList.add("msg");
-        const name = document.createElement("span");
-        name.innerText = message.name;
-        div.appendChild(name);
-        const time = document.createElement("span");
-        time.innerText = new Date(message.time).toLocaleString("en-US");
-        time.classList.add("msgTime");
-        div.appendChild(time);
-        const content = document.createElement("p");
-        content.innerText = message.content;
-        div.appendChild(content);
-        return div;
-    }
-
     socket.on("message", msg => {
         messageDiv.appendChild(buildMessage(msg as Message));
-        messageDiv.scrollTop = messageDiv.scrollHeight;
+        scrollToLatest();
     });
 
-    const signout = () => {
-        window.location.assign(refDir(window.location.href) + "login.html");
-    };
+    socket.on("statusUpdate", (update: {name: string, connected: boolean}) => {
+        const domId = "user-" + update.name;
+        const old = document.getElementById(domId)
+        if (old) {
+            connectedUsersDiv.removeChild(old);
+        }
+        if (update.connected) {
+            connectedUsersDiv.appendChild(buildUserSpan(update.name));
+        }
+        connectedUserCountSpan.innerText = "" + connectedUsersDiv.childNodes.length;
+    });
 
     document.getElementById("signoutButton").onclick = signout;
-    document.getElementById("removeButton").onclick = () => {
-        fetch(refDir(window.location.href) + "api/leave", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(config)
-        }).then(response => {
-            if (response.ok) {
-                localStorage.removeItem("userConfig");
-                signout();
-            } else {
-                response.text().then(err => {
-                    removeErrorSpan.innerText = err;
-                });
-            }
-        });
-    };
-
-    const refresh = () => {
-        socket.timeout(5000).emitWithAck("refresh").then((response: Message[]) => {
-            messageDiv.innerText = "";
-            response.forEach(message => {
-                messageDiv.appendChild(buildMessage(message));
-            });
-            messageDiv.scrollTop = messageDiv.scrollHeight;
-        });
-    }
+    document.getElementById("removeButton").onclick = removeUser;
 
     refresh();
+}
+
+function sendMessage() {
+    const content = messageInput.value.trim();
+    if (!content) { return; }
+    const message: {token: string, message: Message} = {token: config.token, message: {content: content, name: config.name, time: Date.now()}};
+    socket.emit("message", message);
+    messageInput.value = "";
+    messageInput.focus();
+};
+
+function signout() {
+    window.location.assign(refDir(window.location.href) + "login.html");
+};
+
+function buildMessage(message: Message): HTMLDivElement {
+    const div = document.createElement("div");
+    div.classList.add("msg");
+    const name = document.createElement("span");
+    name.innerText = message.name;
+    div.appendChild(name);
+    const time = document.createElement("span");
+    time.innerText = new Date(message.time).toLocaleString("en-US");
+    time.classList.add("msgTime");
+    div.appendChild(time);
+    const content = document.createElement("p");
+    content.innerText = message.content;
+    div.appendChild(content);
+    return div;
+}
+
+function removeUser() {
+    fetch(refDir(window.location.href) + "api/leave", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(config)
+    }).then(response => {
+        if (response.ok) {
+            localStorage.removeItem("userConfig");
+            signout();
+        } else {
+            response.text().then(err => {
+                removeErrorSpan.innerText = err;
+            });
+        }
+    });
+}
+
+function scrollToLatest() {
+    messageDiv.scrollTop = messageDiv.scrollHeight;
+}
+
+function refresh() {
+    socket.timeout(5000).emitWithAck("refresh").then((response: {names: string[], messages: Message[]}) => {
+        messageDiv.innerText = "";
+        response.messages.forEach(message => {
+            messageDiv.appendChild(buildMessage(message));
+        });
+        scrollToLatest();
+        connectedUsersDiv.innerText = "";
+        response.names.forEach(name => {
+            connectedUsersDiv.appendChild(buildUserSpan(name));
+        });
+        connectedUserCountSpan.innerText = "" + connectedUsersDiv.childNodes.length;
+    });
+}
+
+function buildUserSpan(name: string) {
+    const span = document.createElement("span");
+    span.innerText = name;
+    span.classList.add("user");
+    span.id = "user-" + name;
+    return span;
 }

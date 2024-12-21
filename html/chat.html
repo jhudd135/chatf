@@ -28,11 +28,18 @@
             margin: 0;
             word-break: break-word;
         }
+        .user {
+            border-style: solid;
+            border-radius: 10px;
+            padding: 3px;
+            margin: 2px;
+            display: inline-block;
+        }
     </style>
 </head>
 
 <body>
-    <h1 id="roomHeader">Room</h1>
+    <h1 style="margin: 0px;" id="roomHeader">Room</h1>
     
     <div style="display: flex; flex-direction: row;">
         <div>User: <span id="userInfoSpan"></span></div>
@@ -40,7 +47,11 @@
         <span id="removeErrorSpan" style="margin-left: auto; margin-right: 10px; color: red;"></span>
         <button id="removeButton" style="color: red;">Delete User</button>
     </div>
-    <div style="height: 60vh; overflow-y: auto;" id="messageDiv"></div>
+    <div style="display: flex; flex-direction: row; margin: 10px 0px;">
+        <div style="margin: 5px; margin-left: 0px; min-width: max-content;"><span id="connectedUserCountSpan">0</span> Connected</div>
+        <div style="flex-grow: 2; height: 5vh; overflow-y: scroll;" id="connectedUsersDiv"></div>
+    </div>
+    <div style="height: 60vh; overflow-y: scroll;" id="messageDiv"></div>
     <div style="display: flex; flex-direction: row;">
         <textarea id="messageInput" style="height: 15vh; width: 60vw; resize: none;" placeholder="enter a message"></textarea> 
         <button id="sendMessageButton" style="margin-bottom: auto;">Send Message</button>

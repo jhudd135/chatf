@@ -11,15 +11,15 @@ export class Room {
     users: Map<string, User>; // username : user
     tokens: Map<string, string>; // token : username
     messages: Message[];
-    // connections: Map<string, Socket>; // token : socket
+    connections: Map<string, Socket>; // token : socket
 
     constructor(id: string, io: Server) {
         this.id = id;
         this.io = io;
         this.users = new Map();
         this.tokens = new Map();
+        this.connections = new Map();
         this.messages = [];
-        // this.connections = new Map();
     }
     static create(id: string, io: Server) {
         rooms.set(id, new Room(id, io));
@@ -46,20 +46,27 @@ export class Room {
         }
         this.users.get(name).remove();
         this.users.delete(name);
-        this.tokens.delete(token);
+        // this.tokens.delete(token);
         return true;
     }
     userConnect(socket: Socket, auth: UserConfig) {
-        if (!this.exists(auth.name, auth.token)) {
+        if (!this.exists(auth.name, auth.token) || this.connections.has(auth.token)) {
             socket.disconnect(true);
             return;
         }
-        // this.connections.set(token, socket);
-        console.log("connected user", this.users.get(auth.name).toString(), "room", this.id);
+        this.connections.set(auth.token, null); // change null to socket if actually needed
+        
         socket.join(this.id);
-        socket.on("refresh", callback => {
-            callback(this.messages);
+
+        socket.on("disconnect", () => {
+            this.connections.delete(auth.token);
+            this.notifyConnection(auth.token, false);
         });
+
+        socket.on("refresh", callback => {
+            callback({messages: this.messages, names: Array.from(this.connections.keys()).map(tk => this.tokens.get(tk))});
+        });
+        
         socket.on("message", (msg: { token: string, message: Message }) => {
             const message = msg.message as Message;
             if (!this.exists(message.name, msg.token)) {
@@ -73,5 +80,19 @@ export class Room {
             this.io.to(this.id).emit("message", message);
             
         });
+
+        // console.log("connected user", this.users.get(auth.name).toString(), "room", this.id);
+        
+        this.notifyConnection(auth.token, true);
+    }
+
+    notifyConnection(token: string, connected: boolean) {
+        console.log(
+            this.id, ":", 
+            this.tokens.get(token) + ":" + token, 
+            connected ? "connected" : "disconnected", 
+            Array.from(this.connections.keys()).map(tk => this.tokens.get(tk))
+        );
+        this.io.to(this.id).emit("statusUpdate", {name: this.tokens.get(token), connected: connected});
     }
 }
