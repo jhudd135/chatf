@@ -7,7 +7,7 @@ export function requestHandler(command: string, req: http.IncomingMessage, res: 
     switch (command) {
         case "join":
             requestBody(req).then(bodyString => {
-                const body: UserConfig = JSON.parse(bodyString);
+                const body: /*UserConfig*/{room: string, name: string} = JSON.parse(bodyString);
                 if (body.name.length < 4 || body.name.match(/[^\w]/)) {
                     res.writeHead(400);
                     res.end("username must be at least 4 characters long and only contain a-z, A-Z, 0-9, and _");
@@ -20,27 +20,27 @@ export function requestHandler(command: string, req: http.IncomingMessage, res: 
                 }
                 const room: Room = rooms.get(body.room);
                 let config: UserConfig;
-                if (body.token) {
-                    config = room.login(body.name, body.token);
-                    if (!config) {
-                        res.writeHead(400);
-                        res.end("username and token combination does not exist");
-                    } else {
-                        res.setHeader("Content-Type", "application/json");
-                        res.writeHead(200);
-                        res.end(JSON.stringify(config));
-                    }
+                // if (body.token) {
+                //     config = room.login(body.name, body.token);
+                //     if (!config) {
+                //         res.writeHead(400);
+                //         res.end("username and token combination does not exist");
+                //     } else {
+                //         res.setHeader("Content-Type", "application/json");
+                //         res.writeHead(200);
+                //         res.end(JSON.stringify(config));
+                //     }
+                // } else {
+                config = room.signup(body.name);
+                if (!config) {
+                    res.writeHead(409);
+                    res.end("username already taken");
                 } else {
-                    config = room.signup(body.name);
-                    if (!config) {
-                        res.writeHead(409);
-                        res.end("username already taken");
-                    } else {
-                        res.setHeader("Content-Type", "application/json");
-                        res.writeHead(201);
-                        res.end(JSON.stringify(config));
-                    }
+                    res.setHeader("Content-Type", "application/json");
+                    res.writeHead(201);
+                    res.end(JSON.stringify(config));
                 }
+                // }
             });
             break;
         case "leave":
@@ -56,7 +56,7 @@ export function requestHandler(command: string, req: http.IncomingMessage, res: 
                     res.end("successfully removed");
                 } else {
                     res.writeHead(400);
-                    res.end("username and token combination does not exist");
+                    res.end("invalid token");
                 }
             });
     }

@@ -15,6 +15,7 @@ let connectedUserCountSpan: HTMLSpanElement;
 
 export function init(io: (...args: any) => Socket) {
     config = JSON.parse(localStorage.getItem("userConfig"));
+    if (!config) {goToLogin();}
     document.getElementById("userInfoSpan").innerText = config.name + ":" + config.token;
     document.getElementById("roomHeader").innerText = config.room;
 
@@ -23,8 +24,12 @@ export function init(io: (...args: any) => Socket) {
     errorSpan = document.getElementById("errorSpan");
     connectedUsersDiv = document.getElementById("connectedUsersDiv") as HTMLDivElement;
     connectedUserCountSpan = document.getElementById("connectedUserCountSpan");
-
-    socket = io({auth: config});
+    
+    socket = io({auth: config});    
+    
+    socket.on("disconnect", () => {
+        goToLogin();
+    });
 
     document.getElementById("sendMessageButton").onclick = sendMessage;
     
@@ -82,6 +87,10 @@ function buildMessage(message: Message): HTMLDivElement {
     return div;
 }
 
+function goToLogin() {
+    window.location.assign(refDir(window.location.href) + "login.html");
+}
+
 function leave() {
     fetch(refDir(window.location.href) + "api/leave", {
         method: "POST",
@@ -92,7 +101,7 @@ function leave() {
     }).then(response => {
         if (response.ok) {
             localStorage.removeItem("userConfig");
-            window.location.assign(refDir(window.location.href) + "login.html");
+            goToLogin();
         } else {
             response.text().then(err => {
                 errorSpan.innerText = err;
