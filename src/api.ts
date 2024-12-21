@@ -8,9 +8,9 @@ export function requestHandler(command: string, req: http.IncomingMessage, res: 
         case "join":
             requestBody(req).then(bodyString => {
                 const body: /*UserConfig*/{room: string, name: string} = JSON.parse(bodyString);
-                if (body.name.length < 4 || body.name.match(/[^\w]/)) {
+                if (body.name.length < 4 || body.name.match(/[^\w]/) || 16 < body.name.length) {
                     res.writeHead(400);
-                    res.end("username must be at least 4 characters long and only contain a-z, A-Z, 0-9, and _");
+                    res.end("username must be 4-16 characters long and only contain a-z, A-Z, 0-9, and _");
                     return;
                 }
                 if (!rooms.has(body.room)) {
