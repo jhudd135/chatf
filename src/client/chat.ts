@@ -12,6 +12,11 @@ let messageDiv: HTMLDivElement;
 let errorSpan: HTMLSpanElement;
 let connectedUsersDiv: HTMLDivElement;
 let connectedUserCountSpan: HTMLSpanElement;
+let muteButton: HTMLButtonElement;
+
+let ding: HTMLAudioElement = new Audio("./resources/ding.mp3");
+
+let muted = false;
 
 export function init(io: (...args: any) => Socket) {
     messageInput = document.getElementById("messageInput") as HTMLTextAreaElement;
@@ -19,6 +24,7 @@ export function init(io: (...args: any) => Socket) {
     errorSpan = document.getElementById("errorSpan");
     connectedUsersDiv = document.getElementById("connectedUsersDiv") as HTMLDivElement;
     connectedUserCountSpan = document.getElementById("connectedUserCountSpan");
+    muteButton = document.getElementById("muteButton") as HTMLButtonElement;
 
     config = JSON.parse(localStorage.getItem("userConfig"));
     if (!config) {
@@ -46,8 +52,12 @@ export function init(io: (...args: any) => Socket) {
     });
 
     socket.on("message", msg => {
-        messageDiv.appendChild(buildMessage(msg as Message));
+        const message = msg as Message;
+        messageDiv.appendChild(buildMessage(message));
         scrollToLatest();
+        if (!muted && message.name !== config.name) {
+            ding.play();
+        }
     });
 
     socket.on("statusUpdate", (update: {name: string, connected: boolean}) => {
@@ -63,6 +73,11 @@ export function init(io: (...args: any) => Socket) {
     });
 
     document.getElementById("leaveButton").onclick = leave;
+
+    muteButton.onclick = (ev) => {
+        muted = !muted;
+        muteButton.innerText = muted ? "unmute" : "mute";
+    }
 
     refresh();
 }
