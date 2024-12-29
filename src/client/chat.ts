@@ -13,6 +13,7 @@ let errorSpan: HTMLSpanElement;
 let connectedUsersDiv: HTMLDivElement;
 let connectedUserCountSpan: HTMLSpanElement;
 let muteButton: HTMLButtonElement;
+let refreshButton: HTMLButtonElement;
 
 let ding: HTMLAudioElement = new Audio("./resources/ding.mp3");
 
@@ -25,6 +26,7 @@ export function init(io: (...args: any) => Socket) {
     connectedUsersDiv = document.getElementById("connectedUsersDiv") as HTMLDivElement;
     connectedUserCountSpan = document.getElementById("connectedUserCountSpan");
     muteButton = document.getElementById("muteButton") as HTMLButtonElement;
+    refreshButton = document.getElementById("refreshButton") as HTMLButtonElement;
 
     config = JSON.parse(localStorage.getItem("userConfig"));
     if (!config) {
@@ -78,6 +80,8 @@ export function init(io: (...args: any) => Socket) {
         muted = !muted;
         muteButton.innerText = muted ? "unmute" : "mute";
     }
+
+    refreshButton.onclick = refresh;
 
     refresh();
 }
@@ -135,6 +139,7 @@ function scrollToLatest() {
 }
 
 function refresh() {
+    console.log("refreshing!!!");
     socket.timeout(5000).emitWithAck("refresh").then((response: {names: string[], messages: Message[]}) => {
         messageDiv.innerText = "";
         response.messages.forEach(message => {
