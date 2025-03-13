@@ -28,7 +28,7 @@ export function init(io: (...args: any) => Socket) {
     muteButton = document.getElementById("muteButton") as HTMLButtonElement;
     refreshButton = document.getElementById("refreshButton") as HTMLButtonElement;
 
-    config = JSON.parse(localStorage.getItem("userConfig"));
+    config = JSON.parse(sessionStorage.getItem("userConfig"));
     if (!config) {
         errorSpan.innerText = "missing user config";
         goToLogin();
@@ -124,7 +124,7 @@ function leave() {
         body: JSON.stringify(config)
     }).then(response => {
         if (response.ok) {
-            localStorage.removeItem("userConfig");
+            sessionStorage.removeItem("userConfig");
             goToLogin();
         } else {
             response.text().then(err => {
@@ -139,7 +139,6 @@ function scrollToLatest() {
 }
 
 function refresh() {
-    console.log("refreshing!!!");
     socket.timeout(5000).emitWithAck("refresh").then((response: {names: string[], messages: Message[]}) => {
         messageDiv.innerText = "";
         response.messages.forEach(message => {

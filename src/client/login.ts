@@ -8,7 +8,7 @@ window.onload = () => {
     // const tokenInput = document.getElementById("tokenInput") as HTMLInputElement;
     const messageSpan = document.getElementById("messageSpan");
 
-    const storedConfig: UserConfig = JSON.parse(localStorage.getItem("userConfig"));
+    const storedConfig: UserConfig = JSON.parse(sessionStorage.getItem("userConfig"));
     if (storedConfig) {
         fetch(refDir(window.location.href) + "api/join/login", {
             method: "POST",
@@ -43,7 +43,7 @@ window.onload = () => {
         }).then(response => {
             if (response.ok) {
                 response.json().then(json => {
-                    localStorage.setItem("userConfig", JSON.stringify(json));
+                    sessionStorage.setItem("userConfig", JSON.stringify(json));
                     window.location.assign(refDir(window.location.href) + "chat.html");
                 })
             } else {
