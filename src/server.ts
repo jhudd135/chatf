@@ -74,6 +74,7 @@ startServer();
 
 function startServer() {
     Room.create("test", io);
+    Room.create("foobar", io);
 
     server.listen(port, () => {
         console.log(`Server is running on port ${port}`);
