@@ -11,7 +11,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/jhudd135/feud.git"
+        "url": "git+https://github.com/jhudd135/chatf.git"
     },
     "devDependencies": {
         "@babel/cli": "^7.18.10",
